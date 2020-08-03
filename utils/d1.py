@@ -37,7 +37,6 @@ class Dataset(data.Dataset):
             self.imgs = np.random.permutation(imgs)
 
         else:
-            print('1111111111')
             self.imgs = [root]
 
         if self.phase == 'train':
@@ -50,15 +49,12 @@ class Dataset(data.Dataset):
                 T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
         else:
-            print('2222222222')
             self.transforms = T.Compose([
                 T.Resize(self.input_shape[1:]),
                 # T.CenterCrop(self.input_shape[1:]),
                 T.ToTensor(),
                 T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ])
-        print('=================')
-        print(len(self.imgs))
 
     def __getitem__(self, index):
         sample = self.imgs[index]
@@ -69,12 +65,11 @@ class Dataset(data.Dataset):
             label = int(self.name2id[label_name])
             #label = int(label_name)
             img_path = sample
+            #data = Image.open(img_path).convert('RGB').convert('L')
             data = Image.open(img_path).convert('RGB')
             data = self.transforms(data)
             return data, label
         else:
-            print('3333333333333')
-            print(sample)
             data = Image.open(sample)
             data = data.convert('RGB')
             data = self.transforms(data)

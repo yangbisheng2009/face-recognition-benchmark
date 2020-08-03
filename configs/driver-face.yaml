@@ -1,8 +1,0 @@
-project_name: 'driver-face'
-
-#train_path: '/home/work/yangfg/corpus/face/CCFB/train-data'
-#train_path: '/home/work/yangfg/experiment/face-recognition/ccfb/train_data/new_training/train'
-train_path: '/home/work/yangfg/workspace/train-traffic/simple-yolov5-pytorch/outputs'
-
-data_dir: ''
-db_dir: ''

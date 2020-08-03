@@ -31,7 +31,6 @@ def val_db(faces_dir, model, tsfm, device):
     print('Low p: {}'.format(small_p))
 
 
-
 def val_checkpoint(faces_dir, model, tsfm, device):
     same = defaultdict()
     diff = defaultdict()

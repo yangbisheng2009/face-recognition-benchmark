@@ -1,0 +1,12 @@
+project_name: 'train-driver'
+
+#train_path: '/home/work/yangfg/corpus/face/CCFB/train-data'
+#train_path: '/home/work/yangfg/corpus/face/CCFB/all-train/Caucasian'
+train_path: '/home/work/yangfg/corpus/driver/2.labeled-xml/mix-face/train-face'
+#train_path: '/home/work/yangfg/experiment/face-recognition/ccfb/train_data/new_training/train'
+grad_clip: 5.
+num_classes: 16520
+
+faces_dir: '/home/work/yangfg/corpus/driver/2.labeled-xml/mix-face/actual-face'
+is_aver: False
+db_dir: './db'
