@@ -45,6 +45,7 @@ def main():
             feature = extract_feature(model, tsfm, os.path.join(faces_dir, folder, faces[0]), device)[0]
             db_dict[folder] = feature
 
+    print('The lenth of Face DB: {}'.format(len(db_dict)))
     torch.save(db_dict, os.path.join(db_dir, project_name+'.db'))
 
 

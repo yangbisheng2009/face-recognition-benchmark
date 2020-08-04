@@ -10,25 +10,50 @@ from torchvision import transforms as T
 from utils.utils import extract_feature, cosin_metric
 
 parser = argparse.ArgumentParser(description='Create FaceDB')
-parser.add_argument('-p', '--project', default='./configs/ccfb.yaml', help='project file')
+parser.add_argument('-p', '--project', default='./configs/true-name.yaml', help='project file')
 parser.add_argument('--which', default='db', help='which to val')
-parser.add_argument('--checkpoint', default='./checkpoints/92-98.9566438832252.pth', help='checkpoint')
-parser.add_argument('--db', default='./db/ccfb.db', help='face db')
+parser.add_argument('--checkpoint', default='./checkpoints/true-name/283-99.39035238751148-r101.pth', help='checkpoint')
+parser.add_argument('--db', default='./db/true-name.db', help='face db')
 args = parser.parse_args()
 
 def val_db(faces_dir, model, tsfm, device):
     print('Load face DB...')
+
+    RIGHT = 0.0
+    WRONG = 0.0
+    UNKNOW = 0.0
+    CNT = 0.0
     
     small_p = []
 
     db = torch.load(args.db)
     for folder in tqdm(os.listdir(faces_dir)):
+        true_label = folder
         for f in os.listdir(os.path.join(faces_dir, folder)):
+            CNT += 1
             feature = extract_feature(model, tsfm, os.path.join(faces_dir, folder, f), device)[0]
-            cos = cosin_metric(feature, db[folder])
-            if cos < 0.5:
-                small_p.append((folder + '_' + f, cos))
-    print('Low p: {}'.format(small_p))
+
+            # compair with all face
+            scores = []
+            labels = []
+            for k, v in db.items():
+                scores.append(cosin_metric(feature, v))
+                labels.append(k)
+
+            pred_score = max(scores)
+            pred_label = labels[scores.index(pred_score)]
+            if pred_score < 0.5:
+                UNKNOW += 1  
+            else:
+                if pred_label == true_label:
+                    RIGHT += 1
+                else:
+                    WRONG += 1
+    
+    prec_p = RIGHT / CNT
+    miss_p = UNKNOW / CNT
+    err_p = WRONG / CNT
+    print('PREC-P: {}, MISS-P: {}, ERR-P: {}'.format(prec_p, miss_p, err_p))
 
 
 def val_checkpoint(faces_dir, model, tsfm, device):

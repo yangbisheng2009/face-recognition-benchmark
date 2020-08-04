@@ -125,7 +125,7 @@ def main():
                      'model': model,
                      'metric_fc': metric_fc,
                      'optimizer': optimizer}
-            torch.save(state, os.path.join(checkpoints_dir, str(epoch) + '-' + str(best_acc)  +'.pth'))
+            torch.save(state, os.path.join(checkpoints_dir, str(epoch) + '-' + str(best_acc) + '-' + args.backbone + '.pth'))
 
 
 def train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch, device, grad_clip):
