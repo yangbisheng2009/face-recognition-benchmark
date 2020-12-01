@@ -4,17 +4,18 @@ Easy to use.
 ## Useage
 ```
 # train
-python train.py -p configs/lfw.yaml --batch-size 16
+python train.py --backbone mobile --batch-size 512 --train-path /home/work/faces/
 
 # val
-python val.py -p configs/lfw.yaml --which db --checkpoint checkpoints/lfw/x.pth
+python val.py --which db --checkpoint checkpoints/lfw/x.pth
 
 # predict
-python predict.py -p configs/lfw.yaml -db db/lfw.db --input-images ./input-images
+python predict.py -db db/lfw.db --input-images ./input-images
 ```
 
 ## ChangeLog
-[2020-08-04] Train/val/predict recognition model.  
+[2020-08-04] Train/val/predict recognition model.
+[2020-08-04] Change train data.  
 
 ## Tricks
 1. If you don't have enough faces. Fuse open source data to help the model convergence.
