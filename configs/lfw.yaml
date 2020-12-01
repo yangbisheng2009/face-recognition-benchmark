@@ -1,5 +1,0 @@
-project_name: 'lfw'
-
-data_dir: ''
-db_dir: ''
-input_size: (112, 112)

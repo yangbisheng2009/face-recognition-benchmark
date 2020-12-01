@@ -1,9 +1,0 @@
-project_name: 'true-name'
-
-train_path: '/home/work/yangfg/corpus/driver/2.labeled-xml/mix-face/true-name-train'
-grad_clip: 5.
-num_classes: 16520
-
-faces_dir: '/home/work/yangfg/corpus/driver/2.labeled-xml/mix-face/true-name-val'
-is_aver: False
-db_dir: './db'
