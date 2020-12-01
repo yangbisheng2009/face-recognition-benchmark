@@ -95,7 +95,7 @@ def main():
         loss, acc = train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch)
         if acc > best_acc:
             status = {'epoch': epoch, 'acc': acc, 'model': model, 'metric_fc': metric_fc, 'optimizer': optimizer}
-            torch.save(status, os.path.join(args.checkpoints, str(epoch) + '_' + '%.4f' % str(acc) + '.pth'))
+            torch.save(status, os.path.join(args.checkpoints, str(epoch) + '_' + '%.4f' % acc + '.pth'))
             best_acc = acc
 
 
@@ -137,6 +137,7 @@ def train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch)
         print('Epoch: [{}][{}/{}], Loss {:.4f} ({:.4f}), Accuracy {:.3f} ({:.3f})'.format(epoch, i,
               len(train_loader), losses.val, losses.avg, top1_accs.val, top1_accs.avg))
 
+    print('=========================== Epoch End ===========================')
     print('[Epoch@] Current epoch LR: {}, Loss: {:.4f}, Accuracy: {:.4f}, Step_num: {}'.format(optimizer.lr,
           losses.avg, top1_accs.avg, optimizer.step_num))
     print('=========================== Epoch End ===========================')

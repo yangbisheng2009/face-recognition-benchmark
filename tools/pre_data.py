@@ -11,8 +11,8 @@ args = parser.parse_args()
 
 def main():
     os.makedirs(args.output_images, exist_ok=True)
-    #folders = ['African', 'Caucasian', 'Asian', 'Indian']
-    folders = ['Asian']
+    folders = ['African', 'Caucasian', 'Asian', 'Indian']
+    #folders = ['Asian']
     total_person_id = 0
     for folder in folders:
         data_path = os.path.join(args.input_images, folder)
