@@ -59,6 +59,9 @@ def main():
             model = resnet_face18(args.use_se)
         model = nn.DataParallel(model)
         num_person = calc_num_person(args.train_path)
+        print('======================================')
+        print('To be trained people number is: {}.'.format(num_person))
+        print('======================================')
         metric_fc = ArcMarginModel(args, num_person)
         metric_fc = nn.DataParallel(metric_fc)
 
