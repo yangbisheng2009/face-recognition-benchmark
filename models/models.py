@@ -6,7 +6,6 @@ import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from torch import nn
 from torch.nn import Parameter
-#from torchsummary import summary
 
 from config import device, num_classes
 

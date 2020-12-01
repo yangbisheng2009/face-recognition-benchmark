@@ -130,11 +130,11 @@ def train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch)
         top1_accs.update(top1_accuracy)
 
         # Print status
-        print('Epoch: [{}][{}/{}]\tLoss {:.4f} ({:.4f})\tTop1 Accuracy {:.3f} ({:.3f})'.format(epoch, i,
+        print('Epoch: [{}][{}/{}], Loss {:.4f} ({:.4f}), Accuracy {:.3f} ({:.3f})'.format(epoch, i,
               len(train_loader), losses.val, losses.avg, top1_accs.val, top1_accs.avg))
 
-    print('*** Current epoch LR: {}, Accuracy: {:.4f}, Loss: {:.4f}, Step_num: {} ***'.format(optimizer.lr,
-          top1_accs.avg, losses.avg, optimizer.step_num))
+    print('*** Current epoch LR: {}, Loss: {:.4f}, Accuracy: {:.4f}, Step_num: {} ***'.format(optimizer.lr,
+          losses.avg, top1_accs.avg, optimizer.step_num))
 
     return losses.avg, top1_accs.avg
 

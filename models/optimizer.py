@@ -1,4 +1,4 @@
-from utils import _clip_gradient, _adjust_learning_rate
+from utils.utils import _clip_gradient, _adjust_learning_rate
 
 
 class InsightFaceOptimizer(object):

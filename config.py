@@ -13,7 +13,7 @@ channel = 3
 grad_clip = 5.  # clip gradients at an absolute value of
 
 # Data parameters
-num_classes = 16520
+num_classes = 1728
 num_samples = 3804846
 DATA_DIR = 'data'
 faces_ms1m_folder = 'data/faces_ms1m_112x112'
