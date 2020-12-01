@@ -137,8 +137,9 @@ def train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch)
         print('Epoch: [{}][{}/{}], Loss {:.4f} ({:.4f}), Accuracy {:.3f} ({:.3f})'.format(epoch, i,
               len(train_loader), losses.val, losses.avg, top1_accs.val, top1_accs.avg))
 
-    print('*** Current epoch LR: {}, Loss: {:.4f}, Accuracy: {:.4f}, Step_num: {} ***'.format(optimizer.lr,
+    print('[Epoch@] Current epoch LR: {}, Loss: {:.4f}, Accuracy: {:.4f}, Step_num: {}'.format(optimizer.lr,
           losses.avg, top1_accs.avg, optimizer.step_num))
+    print('=========================== Epoch End ===========================')
 
     return losses.avg, top1_accs.avg
 
