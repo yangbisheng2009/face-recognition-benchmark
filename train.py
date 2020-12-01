@@ -1,9 +1,10 @@
+import os
+import argparse
 import numpy as np
 import torch
-#from tensorboardX import SummaryWriter
 from torch import nn
 from data import Dataset
-from config import device, grad_clip, print_freq
+from config import device, grad_clip
 from data_gen import ArcFaceDataset
 from focal_loss import FocalLoss
 from megaface_eval import megaface_test
@@ -11,29 +12,47 @@ from models import resnet18, resnet34, resnet50, resnet101, resnet152, MobileNet
 from optimizer import InsightFaceOptimizer
 from utils import parse_args, save_checkpoint, AverageMeter, accuracy, get_logger
 
+parser = argparse.ArgumentParser(description='Train face network')
+parser.add_argument('--train-path', default='./train-faces', help='train face path')
+parser.add_argument('--epochs', type=int, default=100, help='training epoch size.')
+parser.add_argument('--batch-size', type=int, default=256, help='batch size in each context')
+parser.add_argument('--backbone', default='resnet101', help='specify backbone')
+parser.add_argument('--resume-checkpoint', type=str, default=None, help='specify backbone')
+parser.add_argument('--pretrained', type=bool, default=True, help='need pretrained model')
 
-def train_net(args):
+parser.add_argument('--lr', type=float, default=0.1, help='start learning rate')
+parser.add_argument('--lr-step', type=int, default=10, help='period of learning rate decay')
+parser.add_argument('--optimizer', default='sgd', help='optimizer')
+parser.add_argument('--weight-decay', type=float, default=5e-4, help='weight decay')
+parser.add_argument('--mom', type=float, default=0.9, help='momentum')
+parser.add_argument('--emb-size', type=int, default=512, help='embedding length')
+parser.add_argument('--margin-m', type=float, default=0.5, help='angular margin m')
+parser.add_argument('--margin-s', type=float, default=64.0, help='feature scale s')
+parser.add_argument('--easy-margin', type=bool, default=False, help='easy margin')
+parser.add_argument('--focal-loss', type=bool, default=True, help='focal loss')
+parser.add_argument('--gamma', type=float, default=2.0, help='focusing parameter gamma')
+parser.add_argument('--use-se', type=bool, default=True, help='use SEBlock')
+parser.add_argument('--full-log', type=bool, default=False, help='full logging')
+args = parser.parse_args()
+
+
+def main():
     torch.manual_seed(7)
     np.random.seed(7)
-    checkpoint = args.checkpoint
-    start_epoch = 0
     best_acc = 0
-    #writer = SummaryWriter()
-    epochs_since_improvement = 0
 
-    # Initialize / load checkpoint
-    if checkpoint is None:
-        if args.network == 'r18':
+    if args.resume_checkpoint is None:
+        if args.backbone == 'r18':
             model = resnet18(args)
-        elif args.network == 'r34':
+        elif args.backbone == 'r34':
             model = resnet34(args)
-        elif args.network == 'r50':
+        elif args.backbone == 'r50':
             model = resnet50(args)
-        elif args.network == 'r101':
+        elif args.backbone == 'resnet101':
             model = resnet101(args)
-        elif args.network == 'r152':
+        elif args.backbone == 'r152':
             model = resnet152(args)
-        elif args.network == 'mobile':
+        elif args.backbone == 'mobile':
             model = MobileNet(1.0)
         else:
             model = resnet_face18(args.use_se)
@@ -42,8 +61,6 @@ def train_net(args):
         metric_fc = nn.DataParallel(metric_fc)
 
         if args.optimizer == 'sgd':
-            # optimizer = torch.optim.SGD([{'params': model.parameters()}, {'params': metric_fc.parameters()}],
-            #                             lr=args.lr, momentum=args.mom, weight_decay=args.weight_decay)
             optimizer = InsightFaceOptimizer(
                 torch.optim.SGD([{'params': model.parameters()}, {'params': metric_fc.parameters()}],
                                 lr=args.lr, momentum=args.mom, weight_decay=args.weight_decay))
@@ -52,16 +69,11 @@ def train_net(args):
                                          lr=args.lr, weight_decay=args.weight_decay)
 
     else:
-        checkpoint = torch.load(checkpoint)
-        start_epoch = checkpoint['epoch'] + 1
-        epochs_since_improvement = checkpoint['epochs_since_improvement']
+        checkpoint = torch.load(args.resume_checkpoint)
         model = checkpoint['model']
         metric_fc = checkpoint['metric_fc']
         optimizer = checkpoint['optimizer']
 
-    #logger = get_logger()
-
-    # Move to GPU, if available
     model = model.to(device)
     metric_fc = metric_fc.to(device)
 
@@ -71,35 +83,24 @@ def train_net(args):
     else:
         criterion = nn.CrossEntropyLoss().to(device)
 
-    # Custom dataloaders
-    train_dataset = Dataset(root=args.train_path, phase='train',input_shape=(3, 112, 112))
+    train_dataset = Dataset(root=args.train_path, phase='train', input_shape=(3, 112, 112))
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=8)
 
-    # Epochs
-    for epoch in range(start_epoch, args.end_epoch):
-        # One epoch's training
-        train_loss, train_top1_accs = train(train_loader=train_loader,
-                                            model=model,
-                                            metric_fc=metric_fc,
-                                            criterion=criterion,
-                                            optimizer=optimizer,
-                                            epoch=epoch)
-        print('\nCurrent effective learning rate: {}\n'.format(optimizer.lr))
-        print('Step num: {}\n'.format(optimizer.step_num))
-
-        # Save checkpoint
-        if epoch % 10 == 0:
-            save_checkpoint(epoch, epochs_since_improvement, model, metric_fc, optimizer, best_acc)
+    for epoch in range(args.epochs):
+        loss, acc = train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch)
+        if acc > best_acc:
+            status = {'epoch': epoch, 'acc': acc, 'model': model, 'metric_fc': metric_fc, 'optimizer': optimizer}
+            torch.save(status, os.path.join(args.checkpoints, str(epoch) + '_' + str(acc) + '.pth'))
+            best_acc = acc
 
 
-def train(train_loader, model, metric_fc, criterion, optimizer, epoch):
-    model.train()  # train mode (dropout and batchnorm is used)
-    metric_fc.train()
-
+def train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch):
     losses = AverageMeter()
     top1_accs = AverageMeter()
 
-    # Batches
+    model.train()
+    metric_fc.train()
+
     for i, (img, label) in enumerate(train_loader):
         # Move to GPU, if available
         img = img.to(device)
@@ -128,19 +129,13 @@ def train(train_loader, model, metric_fc, criterion, optimizer, epoch):
         top1_accs.update(top1_accuracy)
 
         # Print status
-        print('Epoch: [{0}][{1}/{2}]\t'
-              'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
-              'Top1 Accuracy {top1_accs.val:.3f} ({top1_accs.avg:.3f})'.format(epoch, i, len(train_loader),
-                                                                               loss=losses,
-                                                                               top1_accs=top1_accs))
+        print('Epoch: [{}][{}/{}]\tLoss {:.4f} ({:.4f})\tTop1 Accuracy {:.3f} ({:.3f})'.format(epoch, i,
+              len(train_loader), losses.val, losses.avg, top1_accs.val, top1_accs.avg))
+
+    print('*** Current epoch LR: {}, Accuracy: {:.4f}, Loss: {:.4f}, Step_num: {} ***'.format(optimizer.lr,
+          top1_accs.avg, losses.avg, optimizer.step_num))
 
     return losses.avg, top1_accs.avg
-
-
-def main():
-    global args
-    args = parse_args()
-    train_net(args)
 
 
 if __name__ == '__main__':
