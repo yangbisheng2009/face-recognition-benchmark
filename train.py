@@ -3,22 +3,23 @@ import argparse
 import numpy as np
 import torch
 from torch import nn
-from data import Dataset
 from config import device, grad_clip
 from data_gen import ArcFaceDataset
 from focal_loss import FocalLoss
 from megaface_eval import megaface_test
-from models import resnet18, resnet34, resnet50, resnet101, resnet152, MobileNet, resnet_face18, ArcMarginModel
 from optimizer import InsightFaceOptimizer
-from utils import parse_args, save_checkpoint, AverageMeter, accuracy, get_logger
+
+from utils.dataset import Dataset
+from utils.utils import AverageMeter, accuracy
+from utils.models import resnet18, resnet34, resnet50, resnet101, resnet152, MobileNet, resnet_face18, ArcMarginModel
 
 parser = argparse.ArgumentParser(description='Train face network')
 parser.add_argument('--train-path', default='./train-faces', help='train face path')
 parser.add_argument('--epochs', type=int, default=100, help='training epoch size.')
-parser.add_argument('--batch-size', type=int, default=256, help='batch size in each context')
+parser.add_argument('--batch-size', type=int, default=64, help='batch size in each context')
 parser.add_argument('--backbone', default='resnet101', help='specify backbone')
 parser.add_argument('--resume-checkpoint', type=str, default=None, help='specify backbone')
-parser.add_argument('--pretrained', type=bool, default=True, help='need pretrained model')
+parser.add_argument('--pretrained', type=bool, default=False, help='need pretrained model')
 
 parser.add_argument('--lr', type=float, default=0.1, help='start learning rate')
 parser.add_argument('--lr-step', type=int, default=10, help='period of learning rate decay')
