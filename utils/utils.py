@@ -203,16 +203,6 @@ def parse_args():
     return args
 
 
-def get_logger():
-    logger = logging.getLogger()
-    handler = logging.StreamHandler()
-    formatter = logging.Formatter("%(asctime)s %(levelname)s \t%(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    logger.setLevel(logging.INFO)
-    return logger
-
-
 def ensure_folder(folder):
     import os
     if not os.path.isdir(folder):
