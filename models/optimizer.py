@@ -19,7 +19,7 @@ class InsightFaceOptimizer(object):
     def _update_lr(self):
         self.step_num += 1
         # divide the learning rate at 100K,160K iterations
-        if self.step_num == 60000 or self.step_num == 100000:
+        if self.step_num == 60000 or self.step_num == 100000 or self.step_num == 140000:
             self.lr = self.lr / 10
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = self.lr

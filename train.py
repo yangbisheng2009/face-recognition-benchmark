@@ -6,7 +6,7 @@ from torch import nn
 
 from config import device, grad_clip
 from utils.dataset import Dataset
-from utils.utils import AverageMeter, accuracy
+from utils.utils import AverageMeter, accuracy, calc_num_person
 from models.focal_loss import FocalLoss
 from models.optimizer import InsightFaceOptimizer
 from models.models import resnet18, resnet34, resnet50, resnet101, resnet152, MobileNet, resnet_face18, ArcMarginModel
@@ -58,7 +58,8 @@ def main():
         else:
             model = resnet_face18(args.use_se)
         model = nn.DataParallel(model)
-        metric_fc = ArcMarginModel(args)
+        num_person = calc_num_person(args.train_path)
+        metric_fc = ArcMarginModel(args, num_person)
         metric_fc = nn.DataParallel(metric_fc)
 
         if args.optimizer == 'sgd':
@@ -91,7 +92,7 @@ def main():
         loss, acc = train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch)
         if acc > best_acc:
             status = {'epoch': epoch, 'acc': acc, 'model': model, 'metric_fc': metric_fc, 'optimizer': optimizer}
-            torch.save(status, os.path.join(args.checkpoints, str(epoch) + '_' + str(acc) + '.pth'))
+            torch.save(status, os.path.join(args.checkpoints, str(epoch) + '_' + '%.4f' % str(acc) + '.pth'))
             best_acc = acc
 
 

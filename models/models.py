@@ -1,13 +1,13 @@
 import math
-from collections import OrderedDict
-
 import torch
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
 from torch import nn
 from torch.nn import Parameter
 
-from config import device, num_classes
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 __all__ = ['ResNet', 'resnet18', 'resnet34', 'resnet50', 'resnet101',
            'resnet152']
@@ -326,10 +326,10 @@ class MobileNet(nn.Module):
 
 
 class ArcMarginModel(nn.Module):
-    def __init__(self, args):
+    def __init__(self, args, num_person):
         super(ArcMarginModel, self).__init__()
 
-        self.weight = Parameter(torch.FloatTensor(num_classes, args.emb_size))
+        self.weight = Parameter(torch.FloatTensor(num_person, args.emb_size))
         nn.init.xavier_uniform_(self.weight)
 
         self.easy_margin = args.easy_margin
@@ -357,10 +357,3 @@ class ArcMarginModel(nn.Module):
         output *= self.s
 
         return output
-
-
-if __name__ == "__main__":
-    # args = parse_args()
-    # model = resnet152(args).to(device)
-    model = MobileNet(1.0).to(device)
-    #summary(model, (3, 112, 112))

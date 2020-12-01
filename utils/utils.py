@@ -26,20 +26,12 @@ def _clip_gradient(optimizer, grad_clip):
                 param.grad.data.clamp_(-grad_clip, grad_clip)
 
 
-def save_checkpoint(epoch, epochs_since_improvement, model, metric_fc, optimizer, acc, is_best=False):
-    state = {'epoch': epoch,
-             'epochs_since_improvement': epochs_since_improvement,
-             'acc': acc,
-             'model': model,
-             'metric_fc': metric_fc,
-             'optimizer': optimizer}
-    # filename = 'checkpoint_' + str(epoch) + '_' + str(loss) + '.tar'
-    filename = str(epoch) + 'checkpoint.tar'
-    torch.save(state, filename)
-    # If this checkpoint is the best so far, store a copy so it doesn't get overwritten by a worse checkpoint
-    if is_best:
-        torch.save(state, 'BEST_checkpoint.tar')
-
+def calc_num_person(train_path):
+    person_id_pool = set()
+    for img in os.listdir(train_path):
+        person_id = img.split('_')[0]
+        person_id_pool.add(person_id)
+    return len(person_id_pool)
 
 class AverageMeter(object):
     """
@@ -174,33 +166,6 @@ def draw_bboxes(img, bounding_boxes, facial_landmarks=[]):
         break  # only first
 
     return img
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description='Train face network')
-    # general
-    parser.add_argument('--train_path', default='train_data/new_training/train/', help='train_path')
-
-    parser.add_argument('--pretrained', type=bool, default=False, help='pretrained model')
-    parser.add_argument('--network', default='r101', help='specify network')
-    parser.add_argument('--end-epoch', type=int, default=500, help='training epoch size.')
-    parser.add_argument('--lr', type=float, default=0.1, help='start learning rate')
-    parser.add_argument('--lr-step', type=int, default=10, help='period of learning rate decay')
-    parser.add_argument('--optimizer', default='sgd', help='optimizer')
-    parser.add_argument('--weight-decay', type=float, default=5e-4, help='weight decay')
-    parser.add_argument('--mom', type=float, default=0.9, help='momentum')
-    parser.add_argument('--emb-size', type=int, default=512, help='embedding length')
-    parser.add_argument('--batch-size', type=int, default=256, help='batch size in each context')
-    parser.add_argument('--margin-m', type=float, default=0.5, help='angular margin m')
-    parser.add_argument('--margin-s', type=float, default=64.0, help='feature scale s')
-    parser.add_argument('--easy-margin', type=bool, default=False, help='easy margin')
-    parser.add_argument('--focal-loss', type=bool, default=True, help='focal loss')
-    parser.add_argument('--gamma', type=float, default=2.0, help='focusing parameter gamma')
-    parser.add_argument('--use-se', type=bool, default=True, help='use SEBlock')
-    parser.add_argument('--full-log', type=bool, default=False, help='full logging')
-    parser.add_argument('--checkpoint', type=str, default=None, help='checkpoint')                       #预载入模型
-    args = parser.parse_args()
-    return args
 
 
 def ensure_folder(folder):
