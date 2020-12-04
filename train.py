@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from torch import nn
 
-from config import device, grad_clip
 from utils.dataset import Dataset
 from utils.utils import AverageMeter, accuracy, calc_num_person
 from models.focal_loss import FocalLoss
@@ -33,8 +32,10 @@ parser.add_argument('--focal-loss', type=bool, default=True, help='focal loss')
 parser.add_argument('--gamma', type=float, default=2.0, help='focusing parameter gamma')
 parser.add_argument('--use-se', type=bool, default=True, help='use SEBlock')
 parser.add_argument('--full-log', type=bool, default=False, help='full logging')
+parser.add_argument('--grad_clip', type=float, default=5., help='full logging')
 args = parser.parse_args()
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 def main():
     os.makedirs(args.checkpoints, exist_ok=True)
@@ -123,7 +124,7 @@ def train_one_epoch(train_loader, model, metric_fc, criterion, optimizer, epoch)
         loss.backward()
 
         # Clip gradients
-        optimizer.clip_gradient(grad_clip)
+        optimizer.clip_gradient(args.grad_clip)
 
         # Update weights
         optimizer.step()
