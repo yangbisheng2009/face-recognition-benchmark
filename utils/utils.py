@@ -11,7 +11,7 @@ from PIL import Image
 
 from align_faces import get_reference_facial_points, warp_and_crop_face
 from config import image_h, image_w
-from mtcnn.detector import detect_faces
+#from mtcnn.detector import detect_faces
 
 
 def _clip_gradient(optimizer, grad_clip):
@@ -100,6 +100,7 @@ def align_face(img_fn, facial5points):
     return dst_img
 
 
+'''
 def get_face_attributes(full_path):
     try:
         img = Image.open(full_path).convert('RGB')
@@ -114,7 +115,7 @@ def get_face_attributes(full_path):
     except:
         pass
     return False, None
-
+'''
 
 def select_central_face(im_size, bounding_boxes):
     width, height = im_size
@@ -133,6 +134,7 @@ def select_central_face(im_size, bounding_boxes):
     return nearest_index
 
 
+'''
 def get_central_face_attributes(full_path):
     try:
         img = Image.open(full_path).convert('RGB')
@@ -147,12 +149,15 @@ def get_central_face_attributes(full_path):
     except:
         pass
     return False, None, None
+'''
 
 
+'''
 def get_all_face_attributes(full_path):
     img = Image.open(full_path).convert('RGB')
     bounding_boxes, landmarks = detect_faces(img)
     return bounding_boxes, landmarks
+'''
 
 
 def draw_bboxes(img, bounding_boxes, facial_landmarks=[]):
